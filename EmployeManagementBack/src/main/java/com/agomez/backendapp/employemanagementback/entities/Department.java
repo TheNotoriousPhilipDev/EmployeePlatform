@@ -1,9 +1,11 @@
 package com.agomez.backendapp.employemanagementback.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -22,7 +24,8 @@ public class Department {
     @NotBlank
     private String name;
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Employee> employees;
+    @OneToMany(mappedBy = "departmentId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonBackReference
+    private Set<Employee> employees = new HashSet<>(); //checkec
 
 }

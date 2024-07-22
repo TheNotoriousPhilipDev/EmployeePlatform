@@ -1,5 +1,6 @@
 package com.agomez.backendapp.employemanagementback.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -44,10 +45,12 @@ public class Employee {
     private BigDecimal salary;
 
     @ManyToOne( optional = false, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "department_id", unique = true, nullable = false)
+    @JoinColumn(name = "department_id", unique = true, nullable = false)//checked
+    @JsonManagedReference
     private Department departmentId;
 
     @ManyToOne()
+    @JoinColumn(name = "role_id", nullable = false)//checked
     private Role role;
 
 }

@@ -1,12 +1,11 @@
 package com.agomez.backendapp.employemanagementback.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -24,6 +23,8 @@ public class Role {
     @NotBlank
     private String name;
 
-    @ManyToMany(mappedBy = "roles", cascade = CascadeType.ALL)
-    private Set<User> users;
+    @ManyToMany(mappedBy = "roles")//
+    @JsonBackReference
+    private Set<User> users = new HashSet<>();
+
 }
