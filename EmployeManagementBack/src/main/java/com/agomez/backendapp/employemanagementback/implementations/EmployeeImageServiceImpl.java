@@ -14,13 +14,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.*;
 
-
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -31,6 +28,8 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +42,8 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
     private String s3urlBucketTemplate;
 
     private final S3Client s3Client;
+
+    private final S3AsyncClient s3AsyncClient;
 
     private final EmployeeRepository employeeRepository;
 
@@ -83,28 +84,51 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
         try {
             // Download the file from S3
             byte[] data = s3Client.getObjectAsBytes(getObjectRequest).asByteArray();
-
-            // Create a local file path
             String localFilePath = settingPathForS3objectToBeDownloaded(keyOfTheEmployeeImage);
-
-            // Write the data to a local file
-            try (OutputStream os = new FileOutputStream(new File(localFilePath))) {
+            try (OutputStream os = new FileOutputStream(localFilePath)) {
                 os.write(data);
                 System.out.println("File downloaded successfully to " + localFilePath);
             } catch (IOException e) {
                 throw new IOException("Error writing file to local path: " + localFilePath, e);
             }
-
         } catch (S3Exception e) {
             throw new FileDownloadException("Error downloading file from S3: " + e.awsErrorDetails().errorMessage() + e);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
     @Override
-    public List<EmployeeImageDto> findAllImages() throws IOException {
+    public List<EmployeeImageDto> findAllImages(){
         return employeeImageRepository.findAllImages();
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteObjectFromS3Bucket(Long id) {
+        Optional<Employee> employee  = employeeRepository.findById(id);
+        if (!employee.isPresent()){
+            throw new RuntimeException("Image not found");
+        }
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(employee.get().getEmployeeImage().getName())
+                .build();
+        CompletableFuture<DeleteObjectResponse> response = s3AsyncClient.deleteObject(deleteObjectRequest);
+        response.whenComplete((deleteRes, ex) -> {
+            if (deleteRes != null){
+            }else {
+                throw new RuntimeException("An S3 exception occurred during delete", ex);
+            }
+        });
+        return response.thenApply(r -> null);
+    }
+
+    @Override
+    public void setSomeEmployeeImageFieldsAsNull(Long id){
+         Employee employee = employeeRepository.findById(id)
+                .orElseThrow( () -> new RuntimeException("Employee with ID:" + id + " Not found"));
+         employee.getEmployeeImage().setS3ObjectUrl(null);
+         employee.getEmployeeImage().setName(null);
+         employee.getEmployeeImage().setCreationDate(null);
+         employeeRepository.save(employee);
     }
 
 
@@ -122,11 +146,8 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
         if (!(Files.exists(downloadPath) && Files.isDirectory(downloadPath))){
             throw new RuntimeException("Error to find Downloads folder");
         }
-
         Path filePath = downloadPath.resolve(filename);
         return filePath.toString();
-
     }
-
 
 }

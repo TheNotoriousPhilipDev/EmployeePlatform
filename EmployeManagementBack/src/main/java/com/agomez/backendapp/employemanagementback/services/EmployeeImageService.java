@@ -9,6 +9,7 @@ import com.agomez.backendapp.employemanagementback.exceptions.FileUploadExceptio
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface EmployeeImageService {
 
@@ -17,6 +18,10 @@ public interface EmployeeImageService {
     void downloadImage(Long id) throws FileDownloadException, IOException;
 
     List<EmployeeImageDto> findAllImages() throws  IOException;
+
+    CompletableFuture<Void> deleteObjectFromS3Bucket(Long id);
+
+    void setSomeEmployeeImageFieldsAsNull(Long id);
 
 
 }

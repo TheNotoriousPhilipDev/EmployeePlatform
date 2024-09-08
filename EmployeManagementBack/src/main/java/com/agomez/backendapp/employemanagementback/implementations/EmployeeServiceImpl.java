@@ -2,6 +2,7 @@ package com.agomez.backendapp.employemanagementback.implementations;
 
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeSecondDto;
+import com.agomez.backendapp.employemanagementback.dtos.EmployeeThirdDto;
 import com.agomez.backendapp.employemanagementback.entities.*;
 import com.agomez.backendapp.employemanagementback.enums.KindOfDepartment;
 import com.agomez.backendapp.employemanagementback.enums.KindOfRole;
@@ -34,7 +35,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public Employee saveEmployee(EmployeeDto employeeDto) throws  FileUploadException, IOException, ParseException {
 
-        //formatting the date
+        //format date
         Date date= new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(employeeDto.hireDate());
 
         //Employee
@@ -96,8 +97,22 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public void deleteEmployeeById(Long id) {
         Optional<Employee> employeeFromDb = employeeRepository.findById(id);
+        if (employeeFromDb.get().getEmployeeImage().getS3ObjectUrl() != null){
+            employeeImageService.deleteObjectFromS3Bucket(employeeFromDb.get().getEmployeeImage().getId());
+        }
         employeeFromDb.ifPresent(employeeRepository::delete);
+    }
 
+    @Override
+    @Transactional
+    public Employee update(EmployeeThirdDto employeeDto, Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee with ID:" + id + " Not found"));
+        employee.setFirstName(employeeDto.firstName());
+        employee.setLastName(employeeDto.lastName());
+        employee.setEmail(employeeDto.email());
+        employee.setPhoneNumber(employeeDto.phoneNumber());
+        return employeeRepository.save(employee);
     }
 
     public void formattingEnumsForKindOfRoles (EmployeeDto employeeDto, Role role){

@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/images")
+@RequestMapping("/api/images")
 public class EmployeeImageController {
 
     private final EmployeeImageService employeeImageService;
@@ -25,10 +25,10 @@ public class EmployeeImageController {
         }
     }
 
-
-    @DeleteMapping("/delete/{id}")
+    @PutMapping("/{id}")
     public void deleteImage(@PathVariable Long id){
-
+        employeeImageService.deleteObjectFromS3Bucket(id);
+        employeeImageService.setSomeEmployeeImageFieldsAsNull(id);
     }
 
     @GetMapping

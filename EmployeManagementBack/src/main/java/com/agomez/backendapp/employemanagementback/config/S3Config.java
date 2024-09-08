@@ -7,6 +7,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
@@ -20,15 +21,22 @@ public class S3Config {
 
     @Bean
     public S3Client s3Client(){
-
         Region region = Region.US_EAST_1;
         AwsCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
-
         return S3Client.builder()
                 .region(region)
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .build();
+    }
 
+    @Bean
+    public S3AsyncClient s3AsyncClient(){
+        Region region = Region.US_EAST_1;
+        AwsCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+        return S3AsyncClient.builder()
+                .region(region)
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .build();
     }
 
 }

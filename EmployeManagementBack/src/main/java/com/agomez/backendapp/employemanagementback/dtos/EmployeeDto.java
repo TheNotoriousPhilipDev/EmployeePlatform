@@ -1,8 +1,6 @@
 package com.agomez.backendapp.employemanagementback.dtos;
 
-import com.agomez.backendapp.employemanagementback.entities.Department;
-import com.agomez.backendapp.employemanagementback.entities.EmployeeImage;
-import com.agomez.backendapp.employemanagementback.entities.Role;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,8 +9,6 @@ import jakarta.validation.constraints.Pattern;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
-import java.math.BigInteger;
-import java.util.Date;
 
 /**
  * DTO for {@link com.agomez.backendapp.employemanagementback.entities.Employee}

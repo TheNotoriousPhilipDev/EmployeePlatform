@@ -2,11 +2,9 @@ package com.agomez.backendapp.employemanagementback.services;
 
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeSecondDto;
+import com.agomez.backendapp.employemanagementback.dtos.EmployeeThirdDto;
 import com.agomez.backendapp.employemanagementback.entities.Employee;
-import com.agomez.backendapp.employemanagementback.entities.EmployeeImage;
-import com.agomez.backendapp.employemanagementback.entities.Role;
 import com.agomez.backendapp.employemanagementback.exceptions.FileUploadException;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -22,6 +20,8 @@ public interface EmployeeService {
     List<EmployeeSecondDto> findAll();
 
     void deleteEmployeeById (Long id);
+
+    Employee update(EmployeeThirdDto employeeDto, Long id);
 
 //
 //    Employee updateEmployee (Long id, Employee employeeDetails);
