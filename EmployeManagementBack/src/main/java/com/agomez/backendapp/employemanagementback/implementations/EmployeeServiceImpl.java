@@ -1,5 +1,7 @@
 package com.agomez.backendapp.employemanagementback.implementations;
 
+import com.agomez.backendapp.employemanagementback.dtos.EmployeeDetailsDto;
+import com.agomez.backendapp.employemanagementback.mapstruct.EmployeeMapper;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeSecondDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeThirdDto;
@@ -15,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.text.ParseException;
@@ -28,15 +29,18 @@ import java.util.*;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeImageService employeeImageService;
-
     private final EmployeeRepository employeeRepository;
+    private final EmployeeMapper employeeMapper;
 
     @Override
     @Transactional
-    public Employee saveEmployee(EmployeeDto employeeDto) throws  FileUploadException, IOException, ParseException {
+    public EmployeeDetailsDto saveEmployee(EmployeeDto employeeDto) throws  FileUploadException, IOException, ParseException {
 
         //format date
         Date date= new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(employeeDto.hireDate());
+
+        //EmployeeImage
+        EmployeeImage employeeImage = new EmployeeImage();
 
         //Employee
         Employee employee = new Employee();
@@ -78,7 +82,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         log.info("Por aquí pasó");
         employeeRepository.save(employee);
         log.info("Todo ok");
-        return employee;
+        return employeeMapper.toDto(employee);
     }
 
     @Override
@@ -105,14 +109,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public Employee update(EmployeeThirdDto employeeDto, Long id) {
+    public EmployeeThirdDto update(EmployeeThirdDto employeeDto, Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employee with ID:" + id + " Not found"));
         employee.setFirstName(employeeDto.firstName());
         employee.setLastName(employeeDto.lastName());
         employee.setEmail(employeeDto.email());
         employee.setPhoneNumber(employeeDto.phoneNumber());
-        return employeeRepository.save(employee);
+        employeeRepository.save(employee);
+        return employeeMapper.mapEmployeeToDto(employee);
     }
 
     public void formattingEnumsForKindOfRoles (EmployeeDto employeeDto, Role role){
@@ -130,7 +135,5 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
         }
     }
-
-
 
 }

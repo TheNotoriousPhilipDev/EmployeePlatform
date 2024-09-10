@@ -14,12 +14,12 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
 
 @Query("SELECT new com.agomez.backendapp.employemanagementback.dtos.EmployeeSecondDto(" +
-        "e.firstName, e.lastName, e.email, e.phoneNumber, e.hireDate, e.department, e.employeeImage) " +
+        "e.firstName, e.lastName, e.email, e.phoneNumber, e.hireDate) " +
         "FROM Employee e WHERE e.id = ?1")
     Optional<EmployeeSecondDto> findEmployeeById(Long id);
 
 @Query("SELECT new com.agomez.backendapp.employemanagementback.dtos.EmployeeSecondDto(" +
-        "e.firstName, e.lastName, e.email, e.phoneNumber, e.hireDate, e.department, e.employeeImage) " +
+        "e.firstName, e.lastName, e.email, e.phoneNumber, e.hireDate) " +
         "FROM Employee e")
     List<EmployeeSecondDto> findAllEmployees();
 

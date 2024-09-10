@@ -1,5 +1,6 @@
 package com.agomez.backendapp.employemanagementback.services;
 
+import com.agomez.backendapp.employemanagementback.dtos.EmployeeDetailsDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeSecondDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeThirdDto;
@@ -13,7 +14,7 @@ import java.util.Optional;
 
 public interface EmployeeService {
     //big fat interface
-    Employee saveEmployee(EmployeeDto employeeDto) throws FileUploadException, ParseException, IOException;
+    EmployeeDetailsDto saveEmployee(EmployeeDto employeeDto) throws FileUploadException, ParseException, IOException;
 
     Optional<EmployeeSecondDto> findById(Long id);
 
@@ -21,12 +22,10 @@ public interface EmployeeService {
 
     void deleteEmployeeById (Long id);
 
-    Employee update(EmployeeThirdDto employeeDto, Long id);
+    EmployeeThirdDto update(EmployeeThirdDto employeeDto, Long id);
 
-//
 //    Employee updateEmployee (Long id, Employee employeeDetails);
-//
-//
+
 //    List<Employee> getAllEmployeesByRole(Long roleId);
 //
 //    Optional<Employee> getEmployeeByKindOfRole(Role role);

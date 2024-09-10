@@ -14,5 +14,5 @@ import java.io.Serializable;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record EmployeeThirdDto(@NotBlank String firstName, String lastName, @Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}", flags = Pattern.Flag.CASE_INSENSITIVE)
-@NotBlank String email, @Digits(message = "Phone number must have exactly 10 digits", integer = 10, fraction = 0) long phoneNumber) implements Serializable {
+@NotBlank String email, @Digits(message = "Phone number must have exactly 10 digits", integer = 10, fraction = 0) Long phoneNumber) implements Serializable {
   }

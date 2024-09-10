@@ -2,10 +2,12 @@ package com.agomez.backendapp.employemanagementback.implementations;
 
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeImageDto;
+import com.agomez.backendapp.employemanagementback.dtos.EmployeeImageSecondDto;
 import com.agomez.backendapp.employemanagementback.entities.Employee;
 import com.agomez.backendapp.employemanagementback.entities.EmployeeImage;
 import com.agomez.backendapp.employemanagementback.exceptions.FileDownloadException;
 import com.agomez.backendapp.employemanagementback.exceptions.FileUploadException;
+import com.agomez.backendapp.employemanagementback.mapstruct.EmployeeImageMapper;
 import com.agomez.backendapp.employemanagementback.repositories.EmployeeImageRepository;
 import com.agomez.backendapp.employemanagementback.repositories.EmployeeRepository;
 import com.agomez.backendapp.employemanagementback.services.EmployeeImageService;
@@ -42,12 +44,11 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
     private String s3urlBucketTemplate;
 
     private final S3Client s3Client;
-
     private final S3AsyncClient s3AsyncClient;
-
     private final EmployeeRepository employeeRepository;
-
     private final EmployeeImageRepository employeeImageRepository;
+    private final EmployeeImageMapper employeeImageMapper;
+
 
     @Override
     public EmployeeImage uploadImage(EmployeeDto employeeDto) throws FileUploadException, IOException {
@@ -129,6 +130,18 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
          employee.getEmployeeImage().setName(null);
          employee.getEmployeeImage().setCreationDate(null);
          employeeRepository.save(employee);
+    }
+
+    @Override
+    public EmployeeImageSecondDto update(Long id, EmployeeDto employeeDto) throws IOException, FileUploadException {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee with ID: " + id +" Not found"));
+        deleteObjectFromS3Bucket(id);
+        EmployeeImage employeeImage = employeeImageRepository.findById(employee.getEmployeeImage().getId())
+                .orElseThrow(() -> new RuntimeException("There's no image associated to employee with ID: " + id));
+        employeeImage = uploadImage(employeeDto);
+        employeeImageRepository.save(employeeImage);
+        return employeeImageMapper.toDto(employee.getEmployeeImage());
     }
 
 

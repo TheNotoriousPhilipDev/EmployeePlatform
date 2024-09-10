@@ -47,20 +47,20 @@ public class Employee {
     @NotNull
     private BigInteger salary;
 
-    @ManyToOne( optional = false, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne( optional = false, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)//checked
     @JsonManagedReference
     private Department department;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)//checked
     private Role role;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_image_id", unique = true)
     private EmployeeImage employeeImage;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", unique = true)
     @JsonManagedReference
     private User user;
