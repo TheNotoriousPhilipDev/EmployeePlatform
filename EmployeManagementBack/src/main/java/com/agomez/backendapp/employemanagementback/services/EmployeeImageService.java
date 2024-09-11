@@ -10,11 +10,12 @@ import com.agomez.backendapp.employemanagementback.exceptions.FileUploadExceptio
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface EmployeeImageService {
 
-    EmployeeImage uploadImage(EmployeeDto employeeDto) throws FileUploadException, IOException, ParseException;
+    EmployeeImage uploadImage(EmployeeDto employeeDto, EmployeeImage employeeImage) throws FileUploadException, IOException, ParseException;
 
     void downloadImage(Long id) throws FileDownloadException, IOException;
 
@@ -23,6 +24,8 @@ public interface EmployeeImageService {
     CompletableFuture<Void> deleteObjectFromS3Bucket(Long id);
 
     void setSomeEmployeeImageFieldsAsNull(Long id);
+
+    Optional<EmployeeImageDto> findById(Long id);
 
     EmployeeImageSecondDto update(Long id, EmployeeDto employeeDto)  throws IOException, FileUploadException;
 

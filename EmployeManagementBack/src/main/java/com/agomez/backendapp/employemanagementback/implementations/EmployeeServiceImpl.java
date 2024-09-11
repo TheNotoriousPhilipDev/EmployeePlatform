@@ -50,7 +50,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setSalary(BigInteger.valueOf(Integer.parseInt(employeeDto.salary())));
         employee.setPhoneNumber(Long.parseLong(employeeDto.phoneNumber()));
         employee.setHireDate(date);
-        employee.setEmployeeImage(employeeImageService.uploadImage(employeeDto));
+        employee.setEmployeeImage(employeeImageService.uploadImage(employeeDto, employeeImage));
 
         //Department
         Set<Employee> employeeSet = new HashSet<>();

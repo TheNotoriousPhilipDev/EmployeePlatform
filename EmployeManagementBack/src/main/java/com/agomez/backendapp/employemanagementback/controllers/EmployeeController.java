@@ -1,5 +1,6 @@
 package com.agomez.backendapp.employemanagementback.controllers;
 
+import com.agomez.backendapp.employemanagementback.dtos.EmployeeDetailsDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeSecondDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeThirdDto;
@@ -25,17 +26,17 @@ public class EmployeeController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> uploadEmployee(@ModelAttribute EmployeeDto employeeDto) throws IOException, FileUploadException, ParseException {
+    public ResponseEntity<EmployeeDetailsDto> uploadEmployee(@ModelAttribute EmployeeDto employeeDto) throws IOException, FileUploadException, ParseException {
         return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.saveEmployee(employeeDto));
    }//checked
 
     @PutMapping("/save/{id}")
-    public ResponseEntity<?> updateEmployee(@PathVariable Long id, @ModelAttribute EmployeeThirdDto employeeThirdDto){
+    public ResponseEntity<EmployeeThirdDto> updateEmployee(@PathVariable Long id, @ModelAttribute EmployeeThirdDto employeeThirdDto){
         return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.update(employeeThirdDto, id));
     }
 
    @GetMapping("/{id}")
-   public ResponseEntity<?> viewEmployee(@PathVariable Long id){
+   public ResponseEntity<EmployeeSecondDto> viewEmployee(@PathVariable Long id){
         Optional<EmployeeSecondDto> optionalEmployee = employeeService.findById(id);
         if (optionalEmployee.isPresent()){
             return ResponseEntity.ok(optionalEmployee.orElseThrow());

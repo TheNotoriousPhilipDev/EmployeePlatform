@@ -51,7 +51,7 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
 
 
     @Override
-    public EmployeeImage uploadImage(EmployeeDto employeeDto) throws FileUploadException, IOException {
+    public EmployeeImage uploadImage(EmployeeDto employeeDto, EmployeeImage employeeImage) throws FileUploadException, IOException {
         if (employeeDto.multipartFile().getOriginalFilename().isEmpty()){
             throw new FileUploadException("The name of the file is empty or it doesn't exist");
         }
@@ -64,13 +64,11 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(employeeDto.multipartFile().getBytes()));
 
-        EmployeeImage employeeImage = new EmployeeImage();
         employeeImage.setCreationDate(new Date());
         employeeImage.setName(fileName);
         employeeImage.setS3ObjectUrl(s3urlBucketTemplate+fileName);
         return employeeImage;
     }
-
 
     @Override
     public void downloadImage(Long id) throws FileDownloadException, IOException {
@@ -125,7 +123,7 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
     @Override
     public void setSomeEmployeeImageFieldsAsNull(Long id){
          Employee employee = employeeRepository.findById(id)
-                .orElseThrow( () -> new RuntimeException("Employee with ID:" + id + " Not found"));
+                .orElseThrow( () -> new RuntimeException("Employee with ID:" + id + " not found"));
          employee.getEmployeeImage().setS3ObjectUrl(null);
          employee.getEmployeeImage().setName(null);
          employee.getEmployeeImage().setCreationDate(null);
@@ -133,13 +131,21 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
     }
 
     @Override
+    public Optional<EmployeeImageDto> findById(Long id) {
+        return employeeImageRepository.findImageById(id);
+    }
+
+
+    @Override
     public EmployeeImageSecondDto update(Long id, EmployeeDto employeeDto) throws IOException, FileUploadException {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employee with ID: " + id +" Not found"));
-        deleteObjectFromS3Bucket(id);
+        if (employee.getEmployeeImage().getS3ObjectUrl() != null) {
+            deleteObjectFromS3Bucket(id);
+        }
         EmployeeImage employeeImage = employeeImageRepository.findById(employee.getEmployeeImage().getId())
                 .orElseThrow(() -> new RuntimeException("There's no image associated to employee with ID: " + id));
-        employeeImage = uploadImage(employeeDto);
+        uploadImage(employeeDto, employeeImage);
         employeeImageRepository.save(employeeImage);
         return employeeImageMapper.toDto(employee.getEmployeeImage());
     }

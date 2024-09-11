@@ -1,5 +1,6 @@
 package com.agomez.backendapp.employemanagementback.mapstruct;
 
+import com.agomez.backendapp.employemanagementback.dtos.EmployeeImageDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeImageSecondDto;
 import com.agomez.backendapp.employemanagementback.entities.EmployeeImage;
 import org.mapstruct.*;
@@ -9,4 +10,5 @@ public interface EmployeeImageMapper {
     EmployeeImage toEntity(EmployeeImageSecondDto employeeImageSecondDto);
 
     EmployeeImageSecondDto toDto(EmployeeImage employeeImage);
+    EmployeeImageDto employeeImageToDto(EmployeeImage employeeImage);
 }
