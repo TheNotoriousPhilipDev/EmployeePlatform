@@ -8,8 +8,6 @@ import java.util.Optional;
 
 public interface DepartmentService {
 
-    Department saveDepartment (Department department);
-
     Optional<Department> getDepartmentById(Long id);
 
     List<Department> getAllDepartments();
