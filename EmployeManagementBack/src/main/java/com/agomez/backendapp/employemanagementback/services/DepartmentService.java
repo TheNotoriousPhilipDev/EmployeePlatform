@@ -1,5 +1,7 @@
 package com.agomez.backendapp.employemanagementback.services;
 
+import com.agomez.backendapp.employemanagementback.dtos.DepartmentDto;
+import com.agomez.backendapp.employemanagementback.dtos.EmployeeDto;
 import com.agomez.backendapp.employemanagementback.entities.Department;
 import com.agomez.backendapp.employemanagementback.entities.Employee;
 
@@ -8,14 +10,15 @@ import java.util.Optional;
 
 public interface DepartmentService {
 
-    Optional<Department> getDepartmentById(Long id);
+    Department save(Employee employee, EmployeeDto employeeDto);
 
-    List<Department> getAllDepartments();
+    DepartmentDto findDepartmentById(Long id);
 
-    Department updateDepartment(Long id, Department departmentDetails);
+    List<DepartmentDto> findAll();
 
-    Optional<Department> deleteDepartment(Long id);
+    DepartmentDto updateDepartment(Long id, DepartmentDto departmentDto);
 
-    Optional<Department> getDepartmentByName(String departmentName);
+    void deleteDepartment(String name);
+
 
 }

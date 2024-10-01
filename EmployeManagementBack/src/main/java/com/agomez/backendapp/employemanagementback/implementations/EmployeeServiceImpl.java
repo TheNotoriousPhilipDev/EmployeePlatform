@@ -6,14 +6,17 @@ import com.agomez.backendapp.employemanagementback.dtos.EmployeeDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeSecondDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeThirdDto;
 import com.agomez.backendapp.employemanagementback.entities.*;
-import com.agomez.backendapp.employemanagementback.enums.KindOfDepartment;
 import com.agomez.backendapp.employemanagementback.enums.KindOfRole;
 import com.agomez.backendapp.employemanagementback.exceptions.FileUploadException;
 import com.agomez.backendapp.employemanagementback.repositories.EmployeeRepository;
+import com.agomez.backendapp.employemanagementback.services.DepartmentService;
 import com.agomez.backendapp.employemanagementback.services.EmployeeImageService;
 import com.agomez.backendapp.employemanagementback.services.EmployeeService;
+import com.agomez.backendapp.employemanagementback.services.EncryptionService;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,21 +29,17 @@ import java.util.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class EmployeeServiceImpl implements EmployeeService {
+public class EmployeeServiceImpl implements EmployeeService, EncryptionService {
 
     private final EmployeeImageService employeeImageService;
+    private final DepartmentService departmentService;
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public EmployeeDetailsDto saveEmployee(EmployeeDto employeeDto) throws  FileUploadException, IOException, ParseException {
-
-        //format date
-        Date date= new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(employeeDto.hireDate());
-
-        //EmployeeImage
-        EmployeeImage employeeImage = new EmployeeImage();
 
         //Employee
         Employee employee = new Employee();
@@ -49,32 +48,27 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setEmail(employeeDto.email());
         employee.setSalary(BigInteger.valueOf(Integer.parseInt(employeeDto.salary())));
         employee.setPhoneNumber(Long.parseLong(employeeDto.phoneNumber()));
-        employee.setHireDate(date);
-        employee.setEmployeeImage(employeeImageService.uploadImage(employeeDto, employeeImage));
+        employee.setHireDate(formatDate(employeeDto));
+
+        //EmployeeImage
+        employee.setEmployeeImage(employeeImageService.save(new EmployeeImage(), employeeDto));
 
         //Department
-        Set<Employee> employeeSet = new HashSet<>();
-        employeeSet.add(employee);
-        Department department = new Department();
-        department.setEmployees(employeeSet);
+        employee.setDepartment(departmentService.save(employee, employeeDto));
 
-        formattingEnumsForKindOfDepartment(employeeDto, department);
-        employee.setDepartment(department);
+       //Data structures to be set
+        List<Role> roleList = new ArrayList<>();
 
         //Users
-        List<Role> roleSet = new ArrayList<>();
-        Set<User> userSet = new HashSet<>();
         User user = new User();
         user.setUsername(employeeDto.username());
-        user.setPassword(employeeDto.password());
-        userSet.add(user);
+        user.setPassword(encryptPassword(employeeDto));
 
         //Role
         Role role = new Role();
-        formattingEnumsForKindOfRoles(employeeDto, role);
-        role.setUsers(userSet);
-        roleSet.add(role);
-        user.setRoles(roleSet);
+        formatEnumsForKindOfRoles(employeeDto, role);
+        roleList.add(role);
+        user.setRoles(roleList);
         employee.setRole(role);
         user.setEmployee(employee);
         employee.setUser(user);
@@ -82,6 +76,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         log.info("Por aquí pasó");
         employeeRepository.save(employee);
         log.info("Todo ok");
+        employeeImageService.uploadImage(employeeDto, employee);
+        log.info("se publica la imagen");
+
         return employeeMapper.toDto(employee);
     }
 
@@ -120,7 +117,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeMapper.mapEmployeeToDto(employee);
     }
 
-    public void formattingEnumsForKindOfRoles (EmployeeDto employeeDto, Role role){
+    public void formatEnumsForKindOfRoles (EmployeeDto employeeDto, Role role){
         for (KindOfRole k: KindOfRole.values()){
             if (employeeDto.role().equalsIgnoreCase(k.name())){
                 role.setKindOfRole(k);
@@ -128,12 +125,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
     }
 
-    public void formattingEnumsForKindOfDepartment (EmployeeDto employeeDto, Department department){
-        for (KindOfDepartment k: KindOfDepartment.values()){
-            if (employeeDto.departmentName().equalsIgnoreCase(k.name())){
-                department.setName(k);
-            }
-        }
+    public Date formatDate(EmployeeDto employeeDto) throws ParseException {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(employeeDto.hireDate());
     }
 
+
+    @Override
+    public String encryptPassword(EmployeeDto employeeDto) {
+        return passwordEncoder.encode(employeeDto.password());
+    }
 }

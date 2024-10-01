@@ -2,16 +2,19 @@ package com.agomez.backendapp.employemanagementback.controllers;
 
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeImageDto;
-import com.agomez.backendapp.employemanagementback.dtos.EmployeeImageSecondDto;
 import com.agomez.backendapp.employemanagementback.exceptions.FileUploadException;
 import com.agomez.backendapp.employemanagementback.services.EmployeeImageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -53,12 +56,19 @@ public class EmployeeImageController {
     }
 
     @PutMapping("/save/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @ModelAttribute EmployeeDto employeeDto) throws FileUploadException, IOException {
-        if (employeeDto.multipartFile().isEmpty()){
-            throw new FileUploadException("The file is empty or not present");
+    public ResponseEntity<?> update(@Valid @PathVariable Long id, @ModelAttribute EmployeeDto employeeDto, BindingResult bindingResult) throws FileUploadException, IOException {
+        if (bindingResult.hasErrors()){
+            return validation(bindingResult);
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(employeeImageService.update(id, employeeDto));
+    }
 
+    private ResponseEntity<?> validation(BindingResult result){
+        Map<String, String> errors = new HashMap<>();
+        result.getFieldErrors().forEach(err -> {
+            errors.put(err.getField(), "The field " + err.getField() + " " + err.getDefaultMessage());
+        });
+        return ResponseEntity.badRequest().body(errors);
     }
 
 }

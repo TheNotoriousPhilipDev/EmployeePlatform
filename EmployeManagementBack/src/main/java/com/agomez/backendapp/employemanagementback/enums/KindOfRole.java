@@ -1,6 +1,6 @@
 package com.agomez.backendapp.employemanagementback.enums;
 
 public enum KindOfRole {
-    ADMIN,
-    EMPLOYEE
+    ROLE_ADMIN,
+    ROLE_EMPLOYEE,
 }

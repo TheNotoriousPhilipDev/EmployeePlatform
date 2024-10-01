@@ -23,13 +23,9 @@ public class Role {
     @Column(name = "kind_of_role", nullable = false)
     private KindOfRole kindOfRole;  
 
-    @ManyToMany(mappedBy = "roles")
-    @JsonBackReference
-    private Set<User> users;
 
-    public Role(KindOfRole kindOfRole, Set<User> users) {
+    public Role(KindOfRole kindOfRole) {
         this.kindOfRole = kindOfRole;
-        this.users = users;
     }
 
     public Role() {

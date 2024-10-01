@@ -6,13 +6,17 @@ import com.agomez.backendapp.employemanagementback.dtos.EmployeeSecondDto;
 import com.agomez.backendapp.employemanagementback.dtos.EmployeeThirdDto;
 import com.agomez.backendapp.employemanagementback.exceptions.FileUploadException;
 import com.agomez.backendapp.employemanagementback.services.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -26,12 +30,18 @@ public class EmployeeController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<EmployeeDetailsDto> uploadEmployee(@ModelAttribute EmployeeDto employeeDto) throws IOException, FileUploadException, ParseException {
+    public ResponseEntity<?> uploadEmployee(@Valid @ModelAttribute EmployeeDto employeeDto, BindingResult result) throws IOException, FileUploadException, ParseException {
+        if (result.hasFieldErrors() | result.hasGlobalErrors()){
+            return validation(result);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.saveEmployee(employeeDto));
-   }//checked
+   }
 
     @PutMapping("/save/{id}")
-    public ResponseEntity<EmployeeThirdDto> updateEmployee(@PathVariable Long id, @ModelAttribute EmployeeThirdDto employeeThirdDto){
+    public ResponseEntity<?> updateEmployee(@Valid @PathVariable Long id, @ModelAttribute EmployeeThirdDto employeeThirdDto, BindingResult result){
+        if (result.hasFieldErrors()){
+            return validation(result);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.update(employeeThirdDto, id));
     }
 
@@ -58,6 +68,14 @@ public class EmployeeController {
        }
        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                .body("Employee with ID: " + id + " is already deleted or doesn't exist");
+   }
+
+   private ResponseEntity<?> validation(BindingResult result){
+       Map<String, String> errors = new HashMap<>();
+       result.getFieldErrors().forEach(err -> {
+           errors.put(err.getField(), "The field " + err.getField() + " " + err.getDefaultMessage());
+       });
+       return ResponseEntity.badRequest().body(errors);
    }
 
 

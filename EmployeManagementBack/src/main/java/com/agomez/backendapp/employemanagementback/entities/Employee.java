@@ -27,6 +27,7 @@ public class Employee {
     @Column(name = "first_name")
     private String firstName;
 
+    @NotBlank
     @Column(name = "last_name")
     private String lastName;
 
@@ -50,19 +51,23 @@ public class Employee {
     @ManyToOne( optional = false, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)//checked
     @JsonManagedReference
+    @ToString.Exclude
     private Department department;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id", nullable = false)//checked
+    @JoinColumn(name = "role_id", nullable = false)
+    @ToString.Exclude//checked
     private Role role;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_image_id", unique = true)
+    @ToString.Exclude
     private EmployeeImage employeeImage;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", unique = true)
     @JsonManagedReference
+    @ToString.Exclude
     private User user;
 
     public Employee(String firstName, String lastName, String email, long phoneNumber, Date hireDate, BigInteger salary, Department department, Role role, EmployeeImage employeeImage, User user) {

@@ -14,7 +14,6 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @Setter
-@ToString
 public class User {
 
     @Id
@@ -26,7 +25,6 @@ public class User {
     private String username;
 
     @NotBlank
-    @Size(min = 8, max = 16)
     private String password;
 //
 //    @Column(name = "is_enabled")
@@ -51,7 +49,8 @@ public class User {
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
+            inverseJoinColumns = @JoinColumn(name = "role_id"),
+            uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "role_id"})}
     )
     @JsonManagedReference
     private List<Role> roles;

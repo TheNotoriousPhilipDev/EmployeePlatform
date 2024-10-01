@@ -14,6 +14,7 @@ import com.agomez.backendapp.employemanagementback.services.EmployeeImageService
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
@@ -51,23 +52,30 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
 
 
     @Override
-    public EmployeeImage uploadImage(EmployeeDto employeeDto, EmployeeImage employeeImage) throws FileUploadException, IOException {
+    public EmployeeImage save(EmployeeImage employeeImage, EmployeeDto employeeDto) {
+        employeeImage.setName(formattingImageName(employeeDto.multipartFile()));
+        employeeImage.setCreationDate(new Date());
+        employeeImage.setS3ObjectUrl(s3urlBucketTemplate+employeeImage.getName());
+        return employeeImage;
+    }
+
+    //pasar un empleado como parametro para asignarlo en el .key
+    @Override
+    public void uploadImage(EmployeeDto employeeDto, Employee employee) throws FileUploadException, IOException {
         if (employeeDto.multipartFile().getOriginalFilename().isEmpty()){
             throw new FileUploadException("The name of the file is empty or it doesn't exist");
         }
         String fileName = formattingImageName(employeeDto.multipartFile());
+        if (!employee.getEmployeeImage().getName().equals(fileName)){
+            throw new FileUploadException("Error while uploading the image");
+        }
+
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
                 .contentType(employeeDto.multipartFile().getContentType())
                 .build();
-
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(employeeDto.multipartFile().getBytes()));
-
-        employeeImage.setCreationDate(new Date());
-        employeeImage.setName(fileName);
-        employeeImage.setS3ObjectUrl(s3urlBucketTemplate+fileName);
-        return employeeImage;
     }
 
     @Override
@@ -101,7 +109,7 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
     }
 
     @Override
-    public CompletableFuture<Void> deleteObjectFromS3Bucket(Long id) {
+    public void deleteObjectFromS3Bucket(Long id) {
         Optional<Employee> employee  = employeeRepository.findById(id);
         if (!employee.isPresent()){
             throw new RuntimeException("Image not found");
@@ -117,10 +125,11 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
                 throw new RuntimeException("An S3 exception occurred during delete", ex);
             }
         });
-        return response.thenApply(r -> null);
+        response.thenApply(r -> null);
     }
 
     @Override
+    @Transactional
     public void setSomeEmployeeImageFieldsAsNull(Long id){
          Employee employee = employeeRepository.findById(id)
                 .orElseThrow( () -> new RuntimeException("Employee with ID:" + id + " not found"));
@@ -135,8 +144,8 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
         return employeeImageRepository.findImageById(id);
     }
 
-
     @Override
+    @Transactional
     public EmployeeImageSecondDto update(Long id, EmployeeDto employeeDto) throws IOException, FileUploadException {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employee with ID: " + id +" Not found"));
@@ -145,11 +154,14 @@ public class EmployeeImageServiceImpl implements EmployeeImageService {
         }
         EmployeeImage employeeImage = employeeImageRepository.findById(employee.getEmployeeImage().getId())
                 .orElseThrow(() -> new RuntimeException("There's no image associated to employee with ID: " + id));
-        uploadImage(employeeDto, employeeImage);
-        employeeImageRepository.save(employeeImage);
+        employeeImage.setCreationDate(new Date());
+        employeeImage.setName(formattingImageName(employeeDto.multipartFile()));
+        employeeImage.setS3ObjectUrl(s3urlBucketTemplate+employeeImage.getName());
+        employee.setEmployeeImage(employeeImage);
+        uploadImage(employeeDto, employee);
+        employeeRepository.save(employee);
         return employeeImageMapper.toDto(employee.getEmployeeImage());
     }
-
 
     //This method is used for formatting the name of an image to maintain a standard naming convention when saving images
     public String formattingImageName(MultipartFile multipartFile){

@@ -16,4 +16,5 @@ public interface EmployeeImageRepository extends JpaRepository<EmployeeImage, Lo
     @Query("SELECT new com.agomez.backendapp.employemanagementback.dtos.EmployeeImageDto(e.s3ObjectUrl, e.creationDate) FROM EmployeeImage e WHERE e.id = ?1")
     Optional<EmployeeImageDto> findImageById(Long id);
 
+
 }
